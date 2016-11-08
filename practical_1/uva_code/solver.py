@@ -92,7 +92,7 @@ class Solver(object):
     # Compute output and loss for x_batch and y_batch.                                     #
     ########################################################################################
     out = self.model.forward(x_batch)
-    loss = self.model.loss(out, y_batch)
+    loss, dout = self.model.loss(out, y_batch)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -132,7 +132,6 @@ class Solver(object):
     val_acc_history = []
 
     for iteration in xrange(num_iterations):
-      print batch_size
       ########################################################################################
       # TODO:                                                                                #
       # Sample a random mini-batch with size of batch_size from train set. Put images to     #
@@ -167,6 +166,7 @@ class Solver(object):
         train_loss_history.append(train_loss)
         train_acc_history.append(train_acc)
         if verbose:
+
           print("Iteration {0:d}/{1:d}: Train Loss = {2:.3f}, Train Accuracy = {3:.3f}".format(
                iteration, num_iterations, train_loss_history[-1], train_acc_history[-1]))
 
@@ -176,7 +176,7 @@ class Solver(object):
           # Compute the loss and accuracy on the validation set.                                 #
           ########################################################################################
           out, val_loss = self.test_on_batch(x_val, y_val)
-          val_acc = self.score(x_val, y_val)
+          val_acc = self.accuracy(out, y_val)
           ########################################################################################
           #                              END OF YOUR CODE                                        #
           ######################################################################################
@@ -207,14 +207,11 @@ class Solver(object):
     # TODO:                                                                                #
     # Compute the accuracy on output of the network. Store it in accuracy variable.        #
     ########################################################################################
+
     p = np.argmax(out, 1)
-    err = p - y
+    err = p.T - np.matrix(y)
     bad = np.count_nonzero(err)
-    print err.shape
-    #print(bad)
-    #print len(y)
-    #print "p", p.shape
-    accuracy = (len(y) - bad) / len(y)
+    accuracy = float(len(y) - bad) / len(y)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################

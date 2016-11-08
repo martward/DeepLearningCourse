@@ -116,7 +116,7 @@ class LinearLayer(Layer):
     #                                                                                      #
     # Initialize biases self.params['b'] with 0.                                           #
     ########################################################################################
-    self.params['w'] = np.random.normal(0, self.layer_params['weight_scale'],(self.layer_params['input_size'],self.layer_params['output_size']))
+    self.params['w'] = np.random.normal(0, self.layer_params['weight_scale'],[self.layer_params['input_size'],self.layer_params['output_size']])
     self.params['b'] = np.zeros(self.layer_params['output_size'])
     ########################################################################################
     #                              END OF YOUR CODE                                        #
@@ -162,8 +162,7 @@ class LinearLayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    print x.shape, self.params['w'].shape
-    out = np.dot(x,self.params['w']) + self.params['b']
+    out = np.dot(x, self.params['w']) + self.params['b']
 
     # Cache if in train mode
     if self.train_mode:
@@ -196,9 +195,10 @@ class LinearLayer(Layer):
     #                                             s                                         #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
+    n = dout.shape[0]
     dx = np.dot(self.params['w'], dout.T)
-    self.grads['w'] = np.dot(-self.cache.T, dout) / dout.shape[0]
-    self.grads['b'] = np.sum(dout) / dout.shape[0]
+    self.grads['w'] = (np.dot(self.cache.T, dout) / n) + self.layer_params['weight_decay'] * self.params['w']
+    self.grads['b'] = (np.sum(dout,0) / n) + self.layer_params['weight_decay'] * self.params['b']
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -210,6 +210,7 @@ class ReLULayer(Layer):
   ReLU activation layer.
 
   """
+
   def forward(self, x):
     """
     Forward pass.
@@ -228,11 +229,10 @@ class ReLULayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    out = None
-
+    out = x.clip(min=0)
     # Cache if in train mode
     if self.train_mode:
-      self.cache = None
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -257,11 +257,13 @@ class ReLULayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    dx = None
+    xReLU = self.cache.clip(min=0)
+    dx = xReLU
+    dx[dx > 0 ] = 1
+    dx = np.multiply(dx, dout.T)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
-
     return dx
 
 class SigmoidLayer(Layer):
@@ -287,11 +289,11 @@ class SigmoidLayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    out = None
+    out = np.divide(1.0, 1+np.exp(-x))
 
     # Cache if in train mode
     if self.train_mode:
-      self.cache = None
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -316,7 +318,9 @@ class SigmoidLayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    dx = None
+    S = np.divide(1.0, 1+np.exp(-self.cache))
+    S2 = np.multiply(S,S)
+    dx = np.multiply(S - S2,dout.T)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -346,11 +350,11 @@ class TanhLayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    out = None
+    out = np.tanh(x)
 
     # Cache if in train mode
     if self.train_mode:
-      self.cache = None
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -375,7 +379,8 @@ class TanhLayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    dx = None
+
+    dx = np.multiply(1 - np.power(np.tanh(self.cache),2),dout.T)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -419,11 +424,13 @@ class ELULayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    out = None
+    z = np.ones(x.shape)
+    z[x < 0] = self.layer_params['alpha']
+    out = np.multiply(x,z)
 
     # Cache if in train mode
     if self.train_mode:
-      self.cache = None
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -448,7 +455,9 @@ class ELULayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    dx = None
+    z = np.zeros(self.cache.shape)
+    z[self.cache < 0] = self.layer_params['alpha']
+    dx = np.multiply(np.multiply(self.cache,z),dout.T)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
