@@ -1,3 +1,4 @@
+import numpy as np
 """
 This module implements various layers for the network.
 You should fill in code into indicated sections.
@@ -115,8 +116,8 @@ class LinearLayer(Layer):
     #                                                                                      #
     # Initialize biases self.params['b'] with 0.                                           #
     ########################################################################################
-    self.params['w'] = np.random.normal(0.0, self.params['weight_scale'],(self.params['input_size'],self.params['output_size']))
-    self.params['b'] = np.zeros(self.params['output_size'])
+    self.params['w'] = np.random.normal(0, self.layer_params['weight_scale'],(self.layer_params['input_size'],self.layer_params['output_size']))
+    self.params['b'] = np.zeros(self.layer_params['output_size'])
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -137,7 +138,7 @@ class LinearLayer(Layer):
     # Compute the loss of the layer which responsible for L2 regularization term. Store it #
     # in loss variable.                                                                    #
     ########################################################################################
-    loss = np.sum(np.power(self.params['w'],2))
+    loss = self.layer_params['weight_decay'] * np.sum(np.power(self.params['w'],2))
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -161,11 +162,12 @@ class LinearLayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
+    print x.shape, self.params['w'].shape
     out = np.dot(x,self.params['w']) + self.params['b']
 
     # Cache if in train mode
     if self.train_mode:
-      self.cache = out
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -191,12 +193,12 @@ class LinearLayer(Layer):
     # Implement backward pass for LinearLayer. Store gradient of the loss with respect to  #
     # layer parameters in self.grads['w'] and self.grads['b']. Store gradient of the loss  #
     # with respect to the input in dx variable.                                            #
-    #                                                                                      #
+    #                                             s                                         #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    dx = np.dot(self.params['w'].T, dout)
-    self.grads['w'] = np.dot(-x.T, dout)
-    self.grads['b'] = np.sum(dout)
+    dx = np.dot(self.params['w'], dout.T)
+    self.grads['w'] = np.dot(-self.cache.T, dout) / dout.shape[0]
+    self.grads['b'] = np.sum(dout) / dout.shape[0]
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################

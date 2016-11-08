@@ -1,3 +1,4 @@
+import numpy as np
 """
 This module implements various losses for the network.
 You should fill in code into indicated sections.
@@ -75,9 +76,13 @@ def SoftMaxLoss(x, y):
   # of the loss with respect to the input and store it in dx variable.                   #
   ########################################################################################
   softmax = np.exp(x) / np.sum(np.exp(x))
-
-  dx = np.dot(self.params['w'].T, y-softmax)
-  loss = np.sum(-np.multiply(np.matrix(y), np.log(softmax)))/np.shape(x)[0]
+  yTrs = []
+  for i in range(0, softmax.shape[0]):
+    yTr = np.zeros(softmax.shape[1])
+    yTr[y[i]] = 1
+    yTrs.append(yTr)
+  dx = yTrs-softmax
+  loss = np.sum(-np.multiply(np.matrix(yTrs), np.log(softmax)))/np.shape(x)[0]
   ########################################################################################
   #                              END OF YOUR CODE                                        #
   ########################################################################################

@@ -1,3 +1,4 @@
+import numpy as np
 """
 This module implements Network model of the network.
 You should fill in code into indicated sections.
@@ -76,8 +77,8 @@ class Network(object):
     # Implement forward pass for the network. Store output of the network in out variable. #
     ########################################################################################
     out = x
-    for l in layer_params:
-        out = l.forward(x)
+    for l in self.layers:
+        out = l.forward(out)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -96,10 +97,9 @@ class Network(object):
     # TODO:                                                                                #
     # Implement backward pass for the network.                                             #
     ########################################################################################
-    dx = []
-    for l in self.layers:
-        dout = l.backward(dout)
-        dx.append(dout)
+    dx = dout
+    for l in reversed(self.layers):
+        dx = l.backward(dx)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -124,11 +124,9 @@ class Network(object):
     # Compute loss and gradient of the loss with the respect to output. Store them in loss #
     # and dout variables respectively.                                                     #
     ########################################################################################
-    loss = []
-    dout = []
+    loss, dout = self.loss_func(out, y)
     for l in self.layers:
-        loss.append(l.layer_loss())
-        dout.append(np.multiply(l.backward(),(out - y)))
+        loss += l.layer_loss()
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
