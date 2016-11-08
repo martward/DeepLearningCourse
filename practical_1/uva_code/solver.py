@@ -50,10 +50,10 @@ class Solver(object):
     ########################################################################################
     # TODO:                                                                                #
     # Compute gradient of the loss on the batch with the respect to model parameters.      #
-    # Compute gradient of the loss with respect to parameters of the model.                #
+    # Compute gradient of the loss with respect ot parametrs of the model.                 #
     ########################################################################################
-    out = None
-    loss = None
+    out = self.model.forward(x_batch)
+    loss = self.model.
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################

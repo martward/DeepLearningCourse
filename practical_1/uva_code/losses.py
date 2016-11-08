@@ -5,7 +5,7 @@ You should fill in code into indicated sections.
 
 def HingeLoss(x, y):
   """
-  Computes multi-class hinge loss and gradient of the loss with the respect to the input for multiclass SVM.
+  Computes hinge loss and gradient of the loss with the respect to the input for multiclass SVM.
 
   Args:
     x: Input data.
@@ -31,14 +31,14 @@ def HingeLoss(x, y):
 
 def CrossEntropyLoss(x, y):
   """
-  Computes multi-class cross entropy loss and gradient with the respect to the input x.
+  Computes cross entropy loss and gradient with the respect to the input.
 
   Args:
     x: Input data.
     y: Labels of data.
 
   Returns:
-    loss: Scalar multi-class cross entropy loss.
+    loss: Scalar cross entropy loss.
     dx: Gradient of the loss with the respect to the input x.
 
   """
@@ -58,7 +58,7 @@ def CrossEntropyLoss(x, y):
 
 def SoftMaxLoss(x, y):
   """
-  Computes the loss and gradient with the respect to the input x.
+  Computes the loss and gradient with the respect to the input for softmax classfier.
 
   Args:
     x: Input data.
@@ -74,8 +74,10 @@ def SoftMaxLoss(x, y):
   # Compute softmax loss on input x and y and store it in loss variable. Compute gradient#
   # of the loss with respect to the input and store it in dx variable.                   #
   ########################################################################################
-  dx = None
-  loss = None
+  softmax = np.exp(x) / np.sum(np.exp(x))
+
+  dx = np.dot(self.params['w'].T, y-softmax)
+  loss = np.sum(-np.multiply(np.matrix(y), np.log(softmax)))/np.shape(x)[0]
   ########################################################################################
   #                              END OF YOUR CODE                                        #
   ########################################################################################

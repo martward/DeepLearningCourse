@@ -1,12 +1,12 @@
 """
 This module implements various optimization functions for the neural networks.
-You should fill in code into indicated sections. 
+You should fill in code into indicated sections.
 """
 
 class SGD(object):
   """
   Implements vanilla stochastic gradient descent.
-  
+
   """
   def __call__(self, w, dw, config = None):
     """
@@ -23,9 +23,9 @@ class SGD(object):
       next_config: Updated config.
 
     """
-    if config is None: 
+    if config is None:
       config = {}
-    
+
     config.setdefault('learning_rate', 1e-2)
 
     ########################################################################################
@@ -33,8 +33,8 @@ class SGD(object):
     # Compute new weights according to vanilla SGD update rule. Store new weights in       #
     # next_w, new config of optimizer in next_config variables respectively.               #
     ########################################################################################
-    next_w = None
-    next_config = None
+    next_w = w - self.config['learning_rate']*dw
+    next_config = self.config
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################

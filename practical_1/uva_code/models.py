@@ -11,7 +11,7 @@ class Network(object):
   """
   def __init__(self):
     """
-    Initializes the model.
+    Initializes the layer according to layer parameters.
 
     """
     self.layers = []
@@ -75,7 +75,9 @@ class Network(object):
     # TODO:                                                                                #
     # Implement forward pass for the network. Store output of the network in out variable. #
     ########################################################################################
-    out = None
+    out = x
+    for l in layer_params:
+        out = l.forward(x)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -94,17 +96,19 @@ class Network(object):
     # TODO:                                                                                #
     # Implement backward pass for the network.                                             #
     ########################################################################################
-
+    dx = []
+    for l in self.layers:
+        dout = l.backward(dout)
+        dx.append(dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
 
-    return
+    return dx
 
   def loss(self, out, y):
     """
-    Computes loss and gradient of the loss with the respect to the out. Out is the output
-    of the last layer of the network.
+    Computes loss and gradient of the loss with the respect to the input data.
 
     Args:
       out: Output of the network after forward pass.
@@ -112,16 +116,19 @@ class Network(object):
 
     Returns:
       loss: Scalar loss.
-      dout: Gradient of the loss with the respect to the out.
+      dout: Gradient of the loss with the respect to the input x.
 
     """
     ########################################################################################
     # TODO:                                                                                #
-    # Compute loss and gradient of the loss with the respect to out. Store them in loss    #
+    # Compute loss and gradient of the loss with the respect to output. Store them in loss #
     # and dout variables respectively.                                                     #
     ########################################################################################
-    loss = None
-    dout = None
+    loss = []
+    dout = []
+    for l in self.layers:
+        loss.append(l.layer_loss())
+        dout.append(np.multiply(l.backward(),(out - y)))
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
