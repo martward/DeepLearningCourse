@@ -77,7 +77,7 @@ def SoftMaxLoss(x, y):
   ########################################################################################
 
   softmax = np.matrix(np.divide(np.exp(x) , np.sum(np.exp(x),1)))
-  
+
   yTrs = []
   for i in range(0, softmax.shape[0]):
     yTr = np.zeros(softmax.shape[1])

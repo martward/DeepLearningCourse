@@ -203,7 +203,7 @@ class LinearLayer(Layer):
     #                              END OF YOUR CODE                                        #
     ########################################################################################
 
-    return dx
+    return dx.T
 
 class ReLULayer(Layer):
   """
@@ -260,7 +260,7 @@ class ReLULayer(Layer):
     xReLU = self.cache.clip(min=0)
     dx = xReLU
     dx[dx > 0 ] = 1
-    dx = np.multiply(dx, dout.T)
+    dx = np.multiply(dx, dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -320,7 +320,7 @@ class SigmoidLayer(Layer):
     ########################################################################################
     S = np.divide(1.0, 1+np.exp(-self.cache))
     S2 = np.multiply(S,S)
-    dx = np.multiply(S - S2,dout.T)
+    dx = np.multiply(S - S2,dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -380,7 +380,7 @@ class TanhLayer(Layer):
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
 
-    dx = np.multiply(1 - np.power(np.tanh(self.cache),2),dout.T)
+    dx = np.multiply(1 - np.power(np.tanh(self.cache),2),dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -459,7 +459,7 @@ class ELULayer(Layer):
 
     z = np.exp(self.cache) * self.layer_params['alpha']
     z[self.cache > 0] = 1
-    dx = np.multiply(z,dout.T)
+    dx = np.multiply(z,dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -490,11 +490,11 @@ class SoftMaxLayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
-    out = None
+    out = np.exp(x) / np.sum(np.exp(x), 1)
 
     # Cache if in train mode
     if self.train_mode:
-      self.cache = None
+      self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -519,7 +519,8 @@ class SoftMaxLayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################s
-    dx = None
+    # calculate diagonal values
+    dx = none
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
