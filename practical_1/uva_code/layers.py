@@ -424,8 +424,9 @@ class ELULayer(Layer):
     # Hint: You can store intermediate variables in self.cache which can be used in        #
     # backward pass computation.                                                           #
     ########################################################################################
+
     z = np.ones(x.shape)
-    z[x < 0] = self.layer_params['alpha']
+    z[x < 0] = (z[x<0]  * self.layer_params['alpha'] )- self.layer_params['alpha']
     out = np.multiply(x,z)
 
     # Cache if in train mode
@@ -455,9 +456,10 @@ class ELULayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
-    z = np.zeros(self.cache.shape)
-    z[self.cache < 0] = self.layer_params['alpha']
-    dx = np.multiply(np.multiply(self.cache,z),dout.T)
+
+    z = np.exp(self.cache) * self.layer_params['alpha']
+    z[self.cache > 0] = 1
+    dx = np.multiply(z,dout.T)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################

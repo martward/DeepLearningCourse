@@ -76,17 +76,16 @@ def SoftMaxLoss(x, y):
   # of the loss with respect to the input and store it in dx variable.                   #
   ########################################################################################
 
-  softmax = np.divide(np.exp(x) , np.sum(np.exp(x),1))
+  softmax = np.matrix(np.divide(np.exp(x) , np.sum(np.exp(x),1)))
+  
   yTrs = []
   for i in range(0, softmax.shape[0]):
     yTr = np.zeros(softmax.shape[1])
     yTr[y[i]] = 1
     yTrs.append(yTr)
+  yTrs = np.matrix(yTrs)
   dx = softmax-yTrs
   loss = -np.sum(np.multiply(np.matrix(yTrs), np.log(softmax)))/x.shape[0]
-  y_vector = np.zeros(x.shape)
-  y_vector[np.arange(len(y)), y] = 1
-  loss2 = - np.sum(np.multiply(y_vector , np.log(softmax))) / x.shape[0]
   ########################################################################################
   #                              END OF YOUR CODE                                        #
   ########################################################################################
