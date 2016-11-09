@@ -425,17 +425,14 @@ class ELULayer(Layer):
     # backward pass computation.                                                           #
     ########################################################################################
 
-    z = np.ones(x.shape)
-    z[x < 0] = (z[x<0]  * self.layer_params['alpha'] )- self.layer_params['alpha']
-    out = np.multiply(x,z)
-
+    z = np.exp(x)*self.layer_params['alpha'] - self.layer_params['alpha']
+    out = np.matrix(np.where(x < 0, z, x))
     # Cache if in train mode
     if self.train_mode:
       self.cache = x
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
-
     return out
 
   def backward(self, dout):
@@ -457,9 +454,11 @@ class ELULayer(Layer):
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################
 
-    z = np.exp(self.cache) * self.layer_params['alpha']
-    z[self.cache > 0] = 1
-    dx = np.multiply(z,dout)
+    #z = np.exp(self.cache) * self.layer_params['alpha']
+    #z[self.cache > 0] = 1
+    #dx = np.multiply(z,dout)
+    z = self.layer_params['alpha'] * np.exp(self.cache)
+    dx = np.multiply(np.where(self.cache < 0, z, 1),dout)
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
@@ -491,7 +490,6 @@ class SoftMaxLayer(Layer):
     # backward pass computation.                                                           #
     ########################################################################################
     out = np.exp(x) / np.sum(np.exp(x), 1)
-
     # Cache if in train mode
     if self.train_mode:
       self.cache = x
@@ -519,8 +517,8 @@ class SoftMaxLayer(Layer):
     #                                                                                      #
     # Hint: Use self.cache from forward pass.                                              #
     ########################################################################################s
-    # calculate diagonal values
-    dx = none
+        #print "dout", dout.shape
+    dx = None
     ########################################################################################
     #                              END OF YOUR CODE                                        #
     ########################################################################################
