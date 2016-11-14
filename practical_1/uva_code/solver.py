@@ -137,7 +137,7 @@ class Solver(object):
       # Sample a random mini-batch with size of batch_size from train set. Put images to     #
       # x_train_batch and labels to y_train_batch.                                           #
       ########################################################################################
-      indices = np.random.choice(49000, batch_size, False)
+      indices = np.random.choice(x_train.shape[0], batch_size, False)
       X_train_batch = []
       Y_train_batch = []
       for i in range(0,batch_size):

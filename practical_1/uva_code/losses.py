@@ -22,8 +22,7 @@ def HingeLoss(x, y):
   # Compute hinge loss on input x and y and store it in loss variable. Compute gradient  #
   # of the loss with respect to the input and store it in dx variable.                   #
   ########################################################################################
-  dx = None
-  loss = None
+
   ########################################################################################
   #                              END OF YOUR CODE                                        #
   ########################################################################################
