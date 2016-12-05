@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import argparse
 import os
-
+import datetime
 import tensorflow as tf
 import numpy as np
 import cifar10_utils
@@ -40,7 +40,8 @@ def train_step(loss):
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    raise NotImplementedError
+    optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
+    train_op = optimizer.minimize(loss)
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -86,7 +87,9 @@ def train():
     ########################
 
     cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
-    num_batches = 5
+    num_batches = int(FLAGS.max_steps)
+#    num_batches = 100
+
     batch_size = FLAGS.batch_size
     x = tf.placeholder("float", [None,32,32,3])
     y = tf.placeholder("float", [None,10])
@@ -96,47 +99,41 @@ def train():
         #print(logits.get_shape())
         loss = conv.loss(logits, y)
         accuracy = conv.accuracy(logits,y)
-        optimizer = tf.train.AdamOptimizer(FLAGS.learning_rate)
-        minimize = optimizer.minimize(loss)
+        minimize = train_step(loss)
         merge_summaries = tf.merge_all_summaries()
-        scope.reuse_variables()
+        saver = tf.train.Saver()
+	scope.reuse_variables()
 
 
         with tf.Session() as sess:
-
-            train_writer = tf.train.SummaryWriter(FLAGS.log_dir  + "/train" , sess.graph)
-            test_writer = tf.train.SummaryWriter(FLAGS.log_dir   +"/test", sess.graph)
+            st = str(datetime.datetime.now())
+            train_writer = tf.train.SummaryWriter(FLAGS.log_dir+ "/" + str(st) + "/train" , sess.graph)
+            test_writer = tf.train.SummaryWriter(FLAGS.log_dir+ "/" + str(st) +"/test", sess.graph)
             sess.run(tf.initialize_all_variables())
+
             x_test, y_test = cifar10.test.images, cifar10.test.labels
             for i in range(num_batches):
                 x_in, y_in = cifar10.train.next_batch(FLAGS.batch_size)
-                if i % 50 == 0 and i > 0:
+                if i % 50 == 0 and i > 0 or i == num_batches - 1 :
                     [summary,l,a,m] = sess.run([merge_summaries,loss,accuracy,minimize], {x:x_in,y:y_in})
                     train_writer.add_summary(summary,i)
-                    print(l)
-                    print(a)
-                    print("--------")
                     test_loss = 0.0
                     test_acc = 0.0
                     pointer = 0
 
-                    for i in range(0,250):
-                        x_test_batch = x_test[pointer:pointer+100,:]
-                        y_test_batch = y_test[pointer:pointer+100,:]
-                        [summary,l,a] = sess.run([merge_summaries,loss, accuracy], {x:x_test_batch,y:y_test_batch})
-                        test_loss += l
-                        test_acc += a
-                        pointer += 100
-                    test_acc = float(test_acc) / 100.0
-                    test_loss = float(test_loss) / 100.0
+                    [summary,test_acc,test_loss] = sess.run([merge_summaries,loss,accuracy],{x:x_test, y:y_test})
                     test_writer.add_summary(summary,i)
+                    print("===========")
+                    print("Progress: ",(float(i)/num_batches) * 100)
                     print("Test accuracy:", test_acc)
                     print("Test Loss:", test_loss)
                 else:
                     [l,a,m] = sess.run([loss,accuracy,minimize], {x:x_in,y:y_in})
-                    print(l)
-                    print(a)
-                    print("--------")
+                    # print(l)
+                    # print(a)
+                    # print("--------")
+            save_path = saver.save(sess, FLAGS.log_dir+"/"+str(st)+"/checkpoint.ckpt")
+            print("Model saved in %s" % save_path)
     ########################
     # END OF YOUR CODE    #
     ########################
