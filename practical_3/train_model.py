@@ -10,7 +10,11 @@ import numpy as np
 import cifar10_utils
 from convnet import *
 from sklearn.multiclass import OneVsRestClassifier
-from tsne import *
+from sklearn import manifold
+from pylab import figure, axes, pie, title, show
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
@@ -114,25 +118,29 @@ def train():
             x_test, y_test = cifar10.test.images, cifar10.test.labels
             for i in range(num_batches):
                 x_in, y_in = cifar10.train.next_batch(FLAGS.batch_size)
-                if i % 50 == 0 and i > 0 or i == num_batches - 1 :
+                if i % FLAGS.print_freq == 0 or i == num_batches - 1 :
                     [summary,l,a,m] = sess.run([merge_summaries,loss,accuracy,minimize], {x:x_in,y:y_in})
                     train_writer.add_summary(summary,i)
-                    test_loss = 0.0
-                    test_acc = 0.0
-                    pointer = 0
+                    print("Progress: ",(float(i)/num_batches) * 100)
+		    print("Train Accuracy:", a)
+		    print("Train Loss", l)
+		    print("-------------")
+                else:
+                    [l,a,m] = sess.run([loss,accuracy,minimize], {x:x_in,y:y_in})
 
+                if i % FLAGS.eval_freq == 0  or i==num_batches -1:
                     [summary,test_acc,test_loss] = sess.run([merge_summaries,loss,accuracy],{x:x_test, y:y_test})
                     test_writer.add_summary(summary,i)
                     print("===========")
-                    print("Progress: ",(float(i)/num_batches) * 100)
                     print("Test accuracy:", test_acc)
                     print("Test Loss:", test_loss)
-                else:
-                    [l,a,m] = sess.run([loss,accuracy,minimize], {x:x_in,y:y_in})
-                    # print(l)
-                    # print(a)
-                    # print("--------")
-            save_path = saver.save(sess, FLAGS.log_dir+"/"+str(st)+"/checkpoint.ckpt")
+                    print("===========")
+                if i%FLAGS.checkpoint_freq == 0 or i==num_batches-1:
+                    save_path = saver.save(sess, FLAGS.checkpoint_dir + "/model.ckpt")
+
+
+
+
             print("Model saved in %s" % save_path)
     ########################
     # END OF YOUR CODE    #
@@ -180,7 +188,6 @@ def train_siamese():
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    raise NotImplementedError
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -204,7 +211,24 @@ def feature_extraction():
     ########################
     # PUT YOUR CODE HERE  #
     ########################
-    clf = OneVsRestClassifier(SVC(kernel='linear'))
+    cifar10 = cifar10_utils.get_cifar10('cifar10/cifar-10-batches-py')
+    x = tf.placeholder("float", [None,32,32,3])
+    with tf.variable_scope("training") as scope:
+        conv = ConvNet()
+        #saver = tf.train.import_meta_graph(FLAGS.checkpoint_dir + "/model.ckpt.meta")
+        [_,_,fc2,_] = conv.inference(x)
+
+    with tf.Session() as sess:
+        saver = tf.train.Saver()
+        saver.restore(sess, FLAGS.checkpoint_dir + "/model.ckpt")
+        x_in, y_in = cifar10.train.next_batch(500)
+        X = sess.run([fc2],{x:x_in})
+        X =np.asarray(X[0])
+        print(X.shape)
+        tsne = manifold.TSNE(learning_rate=100)
+        plotting = tsne.fit_transform(X)
+        plt.scatter(plotting[:, 0], plotting[:, 1], c=y_in)
+        plt.savefig("t-sne.png")
     ########################
     # END OF YOUR CODE    #
     ########################
@@ -267,7 +291,7 @@ if __name__ == '__main__':
                       help='Summaries log directory')
     parser.add_argument('--checkpoint_dir', type = str, default = CHECKPOINT_DIR_DEFAULT,
                       help='Checkpoint directory')
-    parser.add_argument('--is_train', type = str, default = True,
+    parser.add_argument('--is_train', type = bool, default = False,
                       help='Training or feature extraction')
     parser.add_argument('--train_model', type = str, default = 'linear',
                       help='Type of model. Possible options: linear and siamese')
