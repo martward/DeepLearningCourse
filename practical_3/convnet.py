@@ -51,7 +51,7 @@ class ConvNet(object):
                   network. These logits can then be used with loss and accuracy
                   to evaluate the model.
         """
-        with tf.variable_scope("ConvNet", regularizer = tf.contrib.layers.regularizers.l2_regularizer(0.0)):
+        with tf.variable_scope("ConvNet", regularizer = tf.contrib.layers.regularizers.l2_regularizer(0.0001)):
             ########################
             # PUT YOUR CODE HERE  #
             ########################

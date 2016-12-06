@@ -136,7 +136,7 @@ def train():
                     print("Test Loss:", test_loss)
                     print("===========")
                 if i%FLAGS.checkpoint_freq == 0 or i==num_batches-1:
-                    save_path = saver.save(sess, FLAGS.checkpoint_dir + "/model.ckpt")
+                    save_path = saver.save(sess, FLAGS.checkpoint_dir + "/model_l2.ckpt")
 
 
 
@@ -220,15 +220,17 @@ def feature_extraction():
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
-        saver.restore(sess, FLAGS.checkpoint_dir + "/model.ckpt")
+        saver.restore(sess, FLAGS.checkpoint_dir + "/model_l2.ckpt")
         x_in, y_in = cifar10.test.images, cifar10.test.labels
-        X = sess.run([fc1],{x:x_in})
+	# x_in = x_in[0:100,:]
+	# y_in = y_in[0:100,:]
+        X = sess.run([fc2],{x:x_in})
         X = np.asarray(X[0])
         print(X.shape)
         tsne = manifold.TSNE()
         plotting = tsne.fit_transform(X)
         print(plotting.shape)
-        plt.scatter(plotting[:, 0], plotting[:, 1],c=np.argmax(y_in,1))
+        plt.scatter(plotting[:, 0], plotting[:, 1],c=np.argmax(y_in,1),marker='+')
         plt.savefig("t-sne.png")
     ########################
     # END OF YOUR CODE    #
@@ -260,7 +262,7 @@ def main(_):
 
     initialize_folders()
 
-    if FLAGS.is_train:
+    if FLAGS.is_train =='True':
         if FLAGS.train_model == 'linear':
             train()
         elif FLAGS.train_model == 'siamese':
@@ -292,7 +294,7 @@ if __name__ == '__main__':
                       help='Summaries log directory')
     parser.add_argument('--checkpoint_dir', type = str, default = CHECKPOINT_DIR_DEFAULT,
                       help='Checkpoint directory')
-    parser.add_argument('--is_train', type = bool, default = False,
+    parser.add_argument('--is_train', type = str, default = 'True',
                       help='Training or feature extraction')
     parser.add_argument('--train_model', type = str, default = 'linear',
                       help='Type of model. Possible options: linear and siamese')
