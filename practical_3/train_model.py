@@ -11,10 +11,10 @@ import cifar10_utils
 from convnet import *
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn import manifold
-from pylab import figure, axes, pie, title, show
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+from pylab import figure, axes, pie, title, show
 
 LEARNING_RATE_DEFAULT = 1e-4
 BATCH_SIZE_DEFAULT = 128
@@ -216,18 +216,19 @@ def feature_extraction():
     with tf.variable_scope("training") as scope:
         conv = ConvNet()
         #saver = tf.train.import_meta_graph(FLAGS.checkpoint_dir + "/model.ckpt.meta")
-        [_,_,fc2,_] = conv.inference(x)
+        [_,fc1,fc2,_] = conv.inference(x)
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
         saver.restore(sess, FLAGS.checkpoint_dir + "/model.ckpt")
-        x_in, y_in = cifar10.train.next_batch(500)
-        X = sess.run([fc2],{x:x_in})
-        X =np.asarray(X[0])
+        x_in, y_in = cifar10.test.images, cifar10.test.labels
+        X = sess.run([fc1],{x:x_in})
+        X = np.asarray(X[0])
         print(X.shape)
-        tsne = manifold.TSNE(learning_rate=100)
+        tsne = manifold.TSNE()
         plotting = tsne.fit_transform(X)
-        plt.scatter(plotting[:, 0], plotting[:, 1], c=y_in)
+        print(plotting.shape)
+        plt.scatter(plotting[:, 0], plotting[:, 1],c=np.argmax(y_in,1))
         plt.savefig("t-sne.png")
     ########################
     # END OF YOUR CODE    #
